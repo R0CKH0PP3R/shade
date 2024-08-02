@@ -4,14 +4,21 @@
 
 SHADE="/var/tmp/shade"
 
+notify(){
+    # Update rather then spam successive notifications by capturing their ID.
+    if [[ -z $NID ]]; then
+        NID=$(notify-send "Brightness changed to ${1}%" -p --expire-time=3000)
+    else
+        notify-send -r $NID "Brightness changed to ${1}%" --expire-time=3000
+    fi
+    echo -e "BRIGHTNESS=${1}\nNID=${NID}" > $SHADE
+}
+
 setvcp(){
     # Change the brightness
     [[ $1 -lt 0 ]] && set -- 0
     ddcutil setvcp 10 $1
-    if [[ $? -eq 0 ]]; then
-        notify-send "Brightness changed to ${1}%" --expire-time=2000
-        echo "BRIGHTNESS=${1}" > $SHADE
-    fi
+    [[ $? -eq 0 ]] && notify $1
 }
 
 round10(){
