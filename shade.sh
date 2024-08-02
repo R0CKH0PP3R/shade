@@ -3,15 +3,17 @@
 # Autostart without args & use DE to set appropriate up/dn keybinds.
 
 SHADE="/var/tmp/shade"
+XT=3000 # milliseconds
+NOW=$(date +%s%3N)
 
 notify(){
     # Update rather then spam successive notifications by capturing their ID.
-    if [[ -z $NID ]]; then
-        NID=$(notify-send "Brightness changed to ${1}%" -p --expire-time=3000)
+    if [[ -z $TIME ]] || [[ $TIME -lt $(($NOW-$XT)) ]]; then
+        NID=$(notify-send "Brightness changed to ${1}%" -p --expire-time=${XT})
     else
-        notify-send -r $NID "Brightness changed to ${1}%" --expire-time=3000
+        notify-send -r $NID "Brightness changed to ${1}%" --expire-time=${XT}
     fi
-    echo -e "BRIGHTNESS=${1}\nNID=${NID}" > $SHADE
+    echo -e "BRIGHTNESS=${1}\nNID=${NID}\nTIME=${NOW}" > $SHADE
 }
 
 setvcp(){
