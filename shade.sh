@@ -19,7 +19,9 @@ notify(){
 setvcp(){
     # Change the brightness
     [[ $1 -lt 0 ]] && set -- 0
-    ddcutil setvcp 10 $1
+    [[ $1 -gt 100 ]] && set -- 100
+    # Everything after $1 is monitor/performance speciffic & totally optional.
+    ddcutil setvcp 10 $1 --bus 8 --sleep-multiplier 0.1 --skip-ddc-checks --noverify
     [[ $? -eq 0 ]] && notify $1
 }
 
@@ -30,6 +32,7 @@ round10(){
 
 init(){
     # Get/set current brightness
+    # TODO? Could get I2C bus w/ 'ddcutil detect' here...
     if [[ -f $SHADE ]]; then
         source $SHADE
     else 
