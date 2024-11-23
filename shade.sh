@@ -13,15 +13,15 @@ notify(){
     else
         notify-send -r $NID "Brightness changed to ${1}%" --expire-time=${XT}
     fi
-    echo -e "BRIGHTNESS=${1}\nNID=${NID}\nTIME=${NOW}" > $SHADE
+    echo -e "BUS=${BUS}\nBRIGHTNESS=${1}\nNID=${NID}\nTIME=${NOW}" > $SHADE
 }
 
 setvcp(){
     # Change the brightness
     [[ $1 -lt 0 ]] && set -- 0
     [[ $1 -gt 100 ]] && set -- 100
-    # Everything after $1 is monitor/performance speciffic & totally optional.
-    ddcutil setvcp 10 $1 --bus 8 --sleep-multiplier 0.1 --skip-ddc-checks --noverify
+    # Everything after $1 is monitor/performance specific & totally optional.
+    ddcutil setvcp 10 $1 --bus $BUS --skip-ddc-checks --noverify
     [[ $? -eq 0 ]] && notify $1
 }
 
@@ -32,13 +32,12 @@ round10(){
 
 init(){
     # Get/set current brightness
-    # TODO? Could get I2C bus w/ 'ddcutil detect' here...
     if [[ -f $SHADE ]]; then
         source $SHADE
     else 
+        BUS=$(ddcutil detect | grep bus | cut -d '-' -f 2)
         BRIGHTNESS=$(ddcutil getvcp 10 | awk '{print $9}' | sed 's/[^0-9]*//g')
         BRIGHTNESS=$(round10 $BRIGHTNESS)
-        echo "BRIGHTNESS=${BRIGHTNESS}" > $SHADE
     fi
 }
 
